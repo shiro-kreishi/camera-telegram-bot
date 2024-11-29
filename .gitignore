@@ -13,6 +13,9 @@ src/cameras.txt
 # logs
 *.log
 
+# sqlite
+*.db
+
 # Env
 src/.env
 .env.docker
