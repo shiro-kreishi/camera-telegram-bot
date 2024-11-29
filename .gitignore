@@ -14,7 +14,7 @@ src/cameras.txt
 *.log
 
 # sqlite
-*.db
+#*.db
 
 # Env
 src/.env

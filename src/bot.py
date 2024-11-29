@@ -13,7 +13,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 class NoGetUpdatesFilter(logging.Filter):
     """Фильтр для исключения логов 'getUpdates'."""
     def filter(self, record: logging.LogRecord) -> bool:
@@ -22,7 +21,6 @@ class NoGetUpdatesFilter(logging.Filter):
 # Применяем фильтр ко всем логгерам
 for handler in logging.getLogger().handlers:
     handler.addFilter(NoGetUpdatesFilter())
-
 
 class ImageBot:
     def __init__(self, token: str, camera_count_url: str, camera_image_url: str, user_manager: UserManager):
@@ -82,6 +80,30 @@ class ImageBot:
         await update.message.reply_text("Это пример текстового сообщения от бота!")
         logger.info("Отправлено текстовое сообщение пользователю.")
 
+    async def show_help(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Отправляет справку для пользователя."""
+        user_id = update.message.from_user.id
+        if self.user_manager.is_user_allowed(user_id):
+            # Для root пользователя показываем полную справку
+            help_text = """
+            Полная справка для администратора:
+            - /start - Стартовая команда.
+            - Камера [номер] - Получить изображение с камеры.
+            - Отправить текст - Получить текстовое сообщение от бота.
+            - /adduser [user_id] - Добавить пользователя в белый список.
+            - /removeuser [user_id] - Удалить пользователя из белого списка.
+            - /listusers - Список пользователей в белом списке.
+            """
+        else:
+            # Для обычного пользователя только базовая справка
+            help_text = """
+            Справка для пользователя:
+            - /start - Стартовая команда.
+            - Камера [номер] - Получить изображение с камеры.
+            - Отправить текст - Получить текстовое сообщение от бота.
+            """
+        await update.message.reply_text(help_text)
+
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Обрабатывает текстовые сообщения от пользователя и проверяет доступ."""
         user_id = update.effective_user.id
@@ -106,10 +128,58 @@ class ImageBot:
             logger.warning(f"Неизвестная команда от пользователя {user_name} (ID: {user_id}): {text}")
             await update.message.reply_text("Неизвестная команда. Попробуйте ещё раз.")
 
+    async def add_user(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Добавление пользователя в белый список."""
+        admin_id = os.getenv("TELEGRAM_ROOT_USER")
+        if update.effective_user.id != int(admin_id):
+            logger.warning(f"Пользователь {update.effective_user.id} попытался использовать команду без прав.")
+            await update.message.reply_text("У вас нет прав для добавления пользователей.")
+            return
+
+        if context.args:
+            user_id = int(context.args[0])
+            if not self.user_manager.add_user(user_id):
+                await update.message.reply_text(f"Пользователь {user_id} уже в белом списке.")
+            else:
+                await update.message.reply_text(f"Пользователь {user_id} добавлен в белый список.")
+                logger.info(f"Пользователь {user_id} добавлен в белый список.")
+        else:
+            await update.message.reply_text("Укажите ID пользователя для добавления.")
+
+    async def remove_user(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Удаление пользователя из белого списка."""
+        admin_id = os.getenv("TELEGRAM_ROOT_USER")
+        if update.effective_user.id != int(admin_id):
+            logger.warning(f"Пользователь {update.effective_user.id} попытался использовать команду без прав.")
+            await update.message.reply_text("У вас нет прав для удаления пользователей.")
+            return
+
+        if context.args:
+            user_id = int(context.args[0])
+            if not self.user_manager.remove_user(user_id):
+                await update.message.reply_text(f"Пользователь {user_id} не найден в белом списке.")
+            else:
+                await update.message.reply_text(f"Пользователь {user_id} удален из белого списка.")
+                logger.info(f"Пользователь {user_id} удален из белого списка.")
+        else:
+            await update.message.reply_text("Укажите ID пользователя для удаления.")
+
+    async def list_users(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Отображение всех пользователей в белом списке."""
+        users = self.user_manager.list_users()
+        if users:
+            await update.message.reply_text("Белый список пользователей:\n" + "\n".join(str(user) for user in users))
+        else:
+            await update.message.reply_text("Белый список пуст.")
+
     def run(self):
         """Регистрация обработчиков и запуск бота."""
         self.fetch_cameras()
         self.app.add_handler(CommandHandler("start", self.start))
+        self.app.add_handler(CommandHandler("help", self.show_help))
+        self.app.add_handler(CommandHandler("add_user", self.add_user))
+        self.app.add_handler(CommandHandler("remove_user", self.remove_user))
+        self.app.add_handler(CommandHandler("list_users", self.list_users))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
         logger.info("Бот запущен и готов к работе.")
         self.app.run_polling()
