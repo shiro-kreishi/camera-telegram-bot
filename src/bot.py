@@ -3,8 +3,8 @@ import logging
 import requests
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
-from src.config import Config
-from src.user_manager import UserManager
+from config import Config
+from user_manager import UserManager
 
 # Настройка логирования
 logging.basicConfig(

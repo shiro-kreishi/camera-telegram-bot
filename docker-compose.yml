@@ -1,0 +1,13 @@
+services:
+  telegram_bot:
+    build: .
+    command: python /usr/src/app/main.py
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - main
+
+networks:
+  main:
+    driver: bridge
