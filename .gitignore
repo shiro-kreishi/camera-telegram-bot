@@ -1,0 +1,45 @@
+.idea
+venv
+__pycache__
+camera_service/cameras.txt
+
+# Python
+*.pyc
+*~
+
+# cameras.txt
+src/cameras.txt
+
+# Env
+src/.env
+.env.docker
+myvenv/
+venv/
+
+# Database
+db.sqlite3
+
+# macOS
+._*
+.DS_Store
+.fseventsd
+.Spotlight-V100
+
+# Windows
+Thumbs.db*
+ehthumbs*.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Visual Studio
+.vscode/
+.history/
+*.code-workspace
+*Zone.Identifier
+
+migrations/
+migration/
+.idea/*
+media/
+
+recognition_service/__pycache__
