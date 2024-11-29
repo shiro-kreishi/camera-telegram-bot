@@ -10,6 +10,9 @@ camera_service/cameras.txt
 # cameras.txt
 src/cameras.txt
 
+# logs
+*.log
+
 # Env
 src/.env
 .env.docker
