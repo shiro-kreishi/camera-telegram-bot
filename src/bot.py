@@ -90,9 +90,9 @@ class ImageBot:
             - /start - Стартовая команда.
             - Камера [номер] - Получить изображение с камеры.
             - Отправить текст - Получить текстовое сообщение от бота.
-            - /adduser [user_id] - Добавить пользователя в белый список.
-            - /removeuser [user_id] - Удалить пользователя из белого списка.
-            - /listusers - Список пользователей в белом списке.
+            - /add_user [user_id] - Добавить пользователя в белый список.
+            - /remove_user [user_id] - Удалить пользователя из белого списка.
+            - /list_user - Список пользователей в белом списке.
             """
         else:
             # Для обычного пользователя только базовая справка
@@ -122,8 +122,8 @@ class ImageBot:
                 await self.send_image(update, camera_id)
                 return
 
-        if text == "Отправить текст":
-            await self.send_text(update)
+        if text == "Показать справку":
+            await self.show_help(update)
         else:
             logger.warning(f"Неизвестная команда от пользователя {user_name} (ID: {user_id}): {text}")
             await update.message.reply_text("Неизвестная команда. Попробуйте ещё раз.")
