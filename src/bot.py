@@ -56,7 +56,7 @@ class ImageBot:
 
         logger.info(f"Пользователь {user_name} (ID: {user_id}) начал сессию.")
         keyboard = [[f"Камера {name}"] for name in self.cameras.values()]
-        keyboard.append(["Отправить текст"])
+        keyboard.append(["Показать справку"])
         reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         await update.message.reply_text("Выберите действие:", reply_markup=reply_markup)
 
@@ -89,7 +89,7 @@ class ImageBot:
             Полная справка для администратора:
             - /start - Стартовая команда.
             - Камера [номер] - Получить изображение с камеры.
-            - Отправить текст - Получить текстовое сообщение от бота.
+            - Показать справку - Получить справку от бота.
             - /add_user [user_id] - Добавить пользователя в белый список.
             - /remove_user [user_id] - Удалить пользователя из белого списка.
             - /list_user - Список пользователей в белом списке.
@@ -100,7 +100,7 @@ class ImageBot:
             Справка для пользователя:
             - /start - Стартовая команда.
             - Камера [номер] - Получить изображение с камеры.
-            - Отправить текст - Получить текстовое сообщение от бота.
+            - Показать справку - Получить справку от бота.
             """
         await update.message.reply_text(help_text)
 
@@ -123,7 +123,7 @@ class ImageBot:
                 return
 
         if text == "Показать справку":
-            await self.show_help(update)
+            await self.show_help(update, context)
         else:
             logger.warning(f"Неизвестная команда от пользователя {user_name} (ID: {user_id}): {text}")
             await update.message.reply_text("Неизвестная команда. Попробуйте ещё раз.")
@@ -179,7 +179,7 @@ class ImageBot:
         self.app.add_handler(CommandHandler("help", self.show_help))
         self.app.add_handler(CommandHandler("add_user", self.add_user))
         self.app.add_handler(CommandHandler("remove_user", self.remove_user))
-        self.app.add_handler(CommandHandler("list_users", self.list_users))
+        self.app.add_handler(CommandHandler("list_user", self.list_users))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
         logger.info("Бот запущен и готов к работе.")
         self.app.run_polling()
